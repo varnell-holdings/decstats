@@ -1,5 +1,7 @@
 from jinja2 import Environment, PackageLoader
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 # import matplotlib.pyplot as plt
 
 
@@ -10,10 +12,14 @@ def get_data():
     grouped_data = data.groupby('consultant').count().sort_values('date')
     result = grouped_data['date']
     data = result.to_frame().iterrows()
-    graph = result.plot(
-        kind='barh', title='Patients thru {}'.format(last_date))
-    ax = graph.get_figure()
-    ax.savefig('med_data.png')
+    # graph = result.plot(
+    #     kind='barh', title='Patients thru {}'.format(last_date))
+    # ax = graph.get_figure()
+    # ax.savefig('med_data.png')
+    sns.set()
+    result.plot.barh()
+    plt.tight_layout()
+    plt.savefig('med_data.png')
     return_data = []
     for doc, num in data:
         return_data.append((doc, str(num).split()[1]))
