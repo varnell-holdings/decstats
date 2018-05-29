@@ -9,7 +9,7 @@ def get_data():
     data = pd.read_csv('medical_data.csv')
     last_date = data['date'][len(data['date']) - 1]
     grouped_data = data.groupby('consultant').sum()
-    grouped_data = data.groupby('consultant').count().sort_values('date')
+    grouped_data = data.groupby('consultant').count().sort_values('date', ascending=False)
     result = grouped_data['date']
     data = result.to_frame().iterrows()
     # graph = result.plot(
