@@ -11,9 +11,9 @@
     <h2>Procedures Performed this year up to {{ date }}</h2> 
 
     <table class="w3-table">
-       <tr><th>Doctor</th><th>Number Procedures</th></tr>
+       <tr><th>Doctor</th><th>Procedures</th></tr>
        {% for doc, num in data %}
-       <tr><td>{{ doc }}</td><td>{{ num }}</td></tr>
+       <tr><td width="450"> {{ doc }}</td><td>{{ num }}</td></tr>
        {% endfor %}
 
     </table>
