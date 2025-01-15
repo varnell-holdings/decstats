@@ -1,8 +1,8 @@
 """
-Looks for all  procedures that were repeated within 3 months
+Looks for all  procedures that were repeated within  month
 where the last one was done in the last 3 month.
 Survey to be done end of March, June, September and December.
-Actually need to look back 6 months to find all cases.
+Actually need to look back 4 months to find all cases.
 """
 import csv
 from collections import defaultdict
@@ -10,11 +10,11 @@ import os
 from datetime import datetime
 
 
-def is_within_91_days(date_string_1, date_string_2):
+def is_within_31_days(date_string_1, date_string_2):
     date_object_1 = datetime.strptime(date_string_1, "%d-%m-%Y")
     date_object_2 = datetime.strptime(date_string_2, "%d-%m-%Y")
     difference = abs((date_object_2 - date_object_1).days)
-    return difference < 91
+    return difference < 31
 
 
 def stringify(m):
@@ -30,16 +30,12 @@ def dates_finder(month):
     Use a flag to tell find_repeats that we need to
     look in final months of previous year.
     """
-    x = month - 5
-    y = month - 4
     z = month - 3
     a = month - 2
     b = month - 1
     c = month
     flip_flag = False
     if c == 3:
-        x = 10
-        y = 11
         z = 12
         flip_flag = True
 
@@ -49,8 +45,6 @@ def dates_finder(month):
             "b": stringify(b),
             "c": stringify(c),
             "z": stringify(z),
-            "y": stringify(y),
-            "x": stringify(x),
         },
         {"a": stringify(a), "b": stringify(b), "c": stringify(c)},
         flip_flag,
@@ -73,7 +67,7 @@ def find_repeats(year, month):  # year is str, month is int
                 or (
                     flip_flag
                     and episode[0][6:10] == str(int(year) - 1)
-                    and episode[0][3:5] in {"10", "11", "12"}
+                    and episode[0][3:5] == "12"
                 )
                 or (
                     flip_flag
@@ -105,17 +99,12 @@ def find_repeats(year, month):  # year is str, month is int
             for key, value in procedures.items():
                 if (
                     len(value) > 1
-                    and value[1][1][3:5]
-                    not in {
-                        month_set["z"],
-                        month_set["y"],
-                        month_set["x"],
-                    }  # exclude repeats in the 4-6 th month ago :
-                    and (is_within_91_days(value[0][1], value[1][1]))
+                    and value[1][1][3:5] != month_set["z"]
+                    and (is_within_31_days(value[0][1], value[1][1]))
                     and not (
                         "" in {value[0][2], value[1][2]}
                         and "" in {value[0][3], value[1][3]}
-                    )
+                    )  # this excludes where the repeated admissions was one for upper and one for lower.
                 ):
                     for admission in value:
                         result_string = f"{admission[0].ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
