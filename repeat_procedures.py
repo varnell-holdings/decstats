@@ -106,8 +106,12 @@ def find_repeats(year, month):  # year is str, month is int
                         and "" in {value[0][3], value[1][3]}
                     )  # this excludes where the repeated admissions was one for upper and one for lower.
                 ):
-                    for admission in value:
-                        result_string = f"{admission[0].ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
+                    for i, admission in enumerate(value):
+                        if i == 0:
+                            result_string = f"{admission[0].ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
+                        else:
+                            result_string = f"{''.ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
+
                         print(result_string)
                         fh.write(result_string + "\n")
                     print()
