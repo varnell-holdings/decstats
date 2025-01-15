@@ -1,3 +1,9 @@
+"""
+Looks for all  procedures that were repeated within 3 months
+where the last one was done in the last 3 month.
+Survey to be done end of March, June, September and December.
+Actually need to look back 6 months to find all cases.
+"""
 import csv
 from collections import defaultdict
 import os
@@ -20,26 +26,40 @@ def stringify(m):
 
 
 def dates_finder(month):
+    """March is special case.
+    Use a flag to tell find_repeats that we need to
+    look in final months of previous year.
+    """
+    x = month - 5
+    y = month - 4
     z = month - 3
     a = month - 2
     b = month - 1
     c = month
     flip_flag = False
     if c == 3:
+        x = 10
+        y = 11
         z = 12
         flip_flag = True
 
     return (
-        {"a": stringify(a), "b": stringify(b), "c": stringify(c), "z": stringify(z)},
+        {
+            "a": stringify(a),
+            "b": stringify(b),
+            "c": stringify(c),
+            "z": stringify(z),
+            "y": stringify(y),
+            "x": stringify(x),
+        },
         {"a": stringify(a), "b": stringify(b), "c": stringify(c)},
         flip_flag,
     )
 
 
-def find_repeats(year, month):
+def find_repeats(year, month):  # year is str, month is int
     month_set, reduced_month_set, flip_flag = dates_finder(month)
     procedures = defaultdict(list)
-    # admissions = 0
     repeat_patients = 0
     with open("day_surgery.csv") as fh:
         reader = csv.reader(fh)
@@ -53,11 +73,11 @@ def find_repeats(year, month):
                 or (
                     flip_flag
                     and episode[0][6:10] == str(int(year) - 1)
-                    and episode[0][3:5] == "12"
+                    and episode[0][3:5] in {"10", "11", "12"}
                 )
                 or (
                     flip_flag
-                    and episode[0][6:10] == str(int(year))
+                    and episode[0][6:10] == year
                     and episode[0][3:5] in reduced_month_set.values()
                 )
             ):
@@ -77,9 +97,7 @@ def find_repeats(year, month):
                         data[1] not in flat_info
                     ):  # don't add duplicates in day_surgery.csv
                         procedures[mrn].append(data)
-                # admissions += 1
 
-        # print(procedures)
         with open("repeats.txt", "a") as fh:
             fh.write(
                 f"""REPORT ON REPEAT PROCEDURES IN THE 3 MONTHS PRIOR TO THE END OF {str(month)}/{year}\n\n"""
@@ -88,7 +106,11 @@ def find_repeats(year, month):
                 if (
                     len(value) > 1
                     and value[1][1][3:5]
-                    != month_set["z"]  # exclude repeats in the 4th month ago :
+                    not in {
+                        month_set["z"],
+                        month_set["y"],
+                        month_set["x"],
+                    }  # exclude repeats in the 4-6 th month ago :
                     and (is_within_91_days(value[0][1], value[1][1]))
                     and not (
                         "" in {value[0][2], value[1][2]}
@@ -103,16 +125,13 @@ def find_repeats(year, month):
                     repeat_patients += 1
                     fh.write("\n\n")
             fh.write("\n\n\n")
-            # fh.write(f"Number of admissions: {admissions}")
             fh.write("\n\n")
             fh.write(f"Number of repeats: {repeat_patients}")
-    # print(f"Number of admissions in previous 4 months: {admissions}")
     print(f"Number of repeats: {repeat_patients}")
-    # os.startfile("repeats.txt")
+    # os.startfile("repeats.txt")  # uncomment this on deployment on windows
 
 
 def intro():
-    # print(hi)
     while True:
         year = input("Year as 4 digits:  ")
         if year.isdigit() and len(year) == 4:
