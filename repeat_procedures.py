@@ -17,11 +17,12 @@ def is_within_31_days(date_string_1, date_string_2):
     return difference < 31
 
 
-def stringify(m):
+def stringify(month):
+    """Change to a string and add a leading 0 to month"""
     if m < 10:
-        m = "0" + str(m)
+        m = "0" + str(month)
     else:
-        m = str(m)
+        m = str(month)
     return m
 
 
@@ -82,7 +83,7 @@ def find_repeats(year, month):  # year is str, month is int
                     episode[8] = "short colon"
                 if episode[8][0:3] == "322":
                     episode[8] = "long colon"
-                data = (episode[1], episode[0], episode[7], episode[8])
+                data = (episode[1], episode[0], episode[5], episode[7], episode[8])
                 if mrn not in procedures:
                     procedures[mrn].append(data)
                 else:
@@ -102,15 +103,15 @@ def find_repeats(year, month):  # year is str, month is int
                     and value[1][1][3:5] != month_set["z"]
                     and (is_within_31_days(value[0][1], value[1][1]))
                     and not (
-                        "" in {value[0][2], value[1][2]}
-                        and "" in {value[0][3], value[1][3]}
+                        "" in {value[0][3], value[1][3]}
+                        and "" in {value[0][4], value[1][4]}
                     )  # this excludes where the repeated admissions was one for upper and one for lower.
                 ):
                     for i, admission in enumerate(value):
                         if i == 0:
-                            result_string = f"{admission[0].ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
+                            result_string = f"{admission[0].ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(25)} {admission[3].ljust(15)} {admission[4].ljust(15)}"
                         else:
-                            result_string = f"{''.ljust(15)} {admission[1].ljust(15)} {admission[2].ljust(15)} {admission[3].ljust(15)}"
+                            result_string = f"{''.ljust(15)} {admission[1].ljust(15)} {''.ljust(25)} {admission[3].ljust(15)} {admission[4].ljust(15)}"
 
                         print(result_string)
                         fh.write(result_string + "\n")
