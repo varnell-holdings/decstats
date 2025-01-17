@@ -82,7 +82,7 @@ def main(year, month):  # year is str, month is int
     month_set, reduced_month_set, flip_flag = dates_finder(month)
     mrn_to_episodes = defaultdict(list)
     repeat_patients = 0
-    with open("day_surgery.csv") as file:
+    with open("D:\JOHN TILLET\episode_data\day_surgery.csv") as file:
         reader = csv.DictReader(file, fieldnames=headers)
         for episode in reader:
             if (
@@ -164,20 +164,19 @@ def main(year, month):  # year is str, month is int
                 ):
                     for i, admission in enumerate(list_of_admissions):
                         if i == 0:
-                            result_string = f"{admission['mrn'].ljust(15)} {admission['date'].ljust(15)} {admission['endoscopist'].ljust(25)} {admission['upper'].ljust(15)} {admission['colon'].ljust(15)}"
+                            result_string = f"{admission['mrn'].ljust(10)} {admission['date'].ljust(12)} {admission['endoscopist'].ljust(25)} {admission['upper'].ljust(10)} {admission['colon'].ljust(10)}"
                         else:
-                            result_string = f"{''.ljust(15)} {admission['date'].ljust(15)} {''.ljust(25)} {admission['upper'].ljust(15)} {admission['colon'].ljust(15)}"
+                            result_string = f"{''.ljust(10)} {admission['date'].ljust(12)} {''.ljust(25)} {admission['upper'].ljust(10)} {admission['colon'].ljust(10)}"
 
                         print(result_string)
                         file.write(result_string + "\n")
                     print()
                     repeat_patients += 1
                     file.write("\n\n")
-            file.write("\n\n\n")
-            file.write("\n\n")
+            file.write("\n")
             file.write(f"Number of repeats: {repeat_patients}")
     print(f"Number of repeats: {repeat_patients}")
-    # os.startfile("repeats.txt")  # uncomment this on deployment on windows
+    os.startfile("repeats.txt")  # uncomment this on deployment on windows
 
 
 def intro():
