@@ -129,7 +129,7 @@ def main(year, month):  # year is str, month is int
                     ):  # the above excludes duplicates that are in day_surgery.csv
                         mrn_to_episodes[mrn].append(data)
 
-        with open("repeats.txt", "a") as file:
+        with open("D:\\JOHN TILLET\\source\\stats\\repeats.txt", "a") as file:
             file.write(
                 f"""REPORT ON REPEAT PROCEDUES IN THE 3 MONTHS PRIOR TO THE END OF {str(month)}/{year}\n\n"""
             )
@@ -176,7 +176,7 @@ def main(year, month):  # year is str, month is int
             file.write("\n")
             file.write(f"Number of repeats: {repeat_patients}")
     print(f"Number of repeats: {repeat_patients}")
-    os.startfile("repeats.txt")  # uncomment this on deployment on windows
+    os.startfile("D:\\JOHN TILLET\\source\\stats\\repeats.txt")  # uncomment this on deployment on windows
 
 
 def intro():
@@ -197,7 +197,7 @@ def intro():
 
 
 if __name__ == "__main__":
-    if os.path.exists("repeats.txt"):
-        os.remove("repeats.txt")
+    if os.path.exists("D:\\JOHN TILLET\\source\\stats\\repeats.txt"):
+        os.remove("D:\\JOHN TILLET\\source\\stats\\repeats.txt")
     year, month = intro()
     main(year, month)
