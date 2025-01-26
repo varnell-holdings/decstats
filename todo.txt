@@ -1,0 +1,104 @@
+BACKEND CAECUM REPORTING SORT OUT
+
+
+***** = ACTIONS in docbill_start
+
+
+
+1. ****   change fail_text  to fail_text_label   everywhere  -  more descriptive
+
+2. ****  line 1586  caecum_flag = caecum.get()  change to  caecum_reason = caecum.get()
+
+3. ***** line 2090  get rid of "" empty string as an option
+
+
+line 1515
+
+        colon = co.get()
+
+        if colon == "Cancelled":
+            message += "Colon cancelled."
+        if colon == "Non Rebatable":
+            message += "Colon done but Non Rebatable."
+        if colon == "Failure to reach caecum":
+            caecum_flag = "fail"
+            message += "Short colon only"
+        else:
+            caecum_flag = "success"
+        colon = COLON_DIC[colon]
+
+this code sets caecum_flag even if no colon was done!!
+note if colon was not done co.get() should return  "No Lower"
+
+
+
+
+4. ***** set line 1480  caecum_flag = False
+5. ****** change above code to
+
+line 1515
+
+        colon = co.get()
+
+        if colon == "Cancelled":
+            message += "Colon cancelled."
+        elif colon == "Non Rebatable":
+            message += "Colon done but Non Rebatable."
+        elif colon == "Failure to reach caecum":
+            caecum_flag = "fail"
+            message += "Short colon only"
+        elif colon[0:3] == "322":
+            caecum_flag = "success"
+        
+        colon = COLON_DIC[colon]
+
+
+
+6. LINE 1832  ***** CHANGE
+
+        if colon:
+            caecum_data(endoscopist, mrn, caecum_flag)
+
+            TO
+
+        if caecum_flag:
+            caecum_to_csv(doctor, mrn, caecum_flag, caecum_reason)
+
+
+
+7. line 908  **** change definition  of function  caecum_data to
+
+def caecum_to_csv(doctor, mrn, caecum_flag, caecum_reason):
+    """Write whether scope got to caecum."""
+    doctor = doctor.split()[-1]
+    today_str = today.strftime("%Y-%m-%d")
+    caecum_data = (today_str, doctor, mrn, caecum_flag, reason)
+    update_csv(caecum_csv_file, caecum_data, today_str, mrn) # caecum_csv_file is defined at line 79
+
+
+8.   ******   line 26   insert  
+from tempfile import NamedTemporaryFile
+import shutil
+
+
+9. *******   line 79   caecum_csv_file = "d:\\JOHN TILLET\\source\\caecum\\caecum.csv"
+
+10. ******    change the definition of  update_csv   ? which line  this is the claude on that I have customised
+This will be in github
+
+
+
+below can be done seperately
+fix up csv -->
+
+
+11.  ****  search for 'Lee' and chance to Denton-Lee
+12. ******    search for HAIFER and change to Haifer
+
+13. **** delete all before  2020-01-06,Meagher,141800,fail,Poor Prep   as they have no 4th column
+
+
+
+
+
+14. *** put in place new caecum.py  adjust file location  and sort out short cut
