@@ -1,6 +1,8 @@
 from collections import defaultdict
 import csv
 
+month_dict = {3: "JANUARY-MARCH", 6: "APRIL-JUNE", 9: "JULY-SEPTEMBER", 12: "OCTOBER-DECEMBER"}
+
 
 def suc_fail_template():
     return {"success": 0, "fail": 0, "total": 0, "poor_prep": 0}
@@ -72,17 +74,17 @@ def main(year, month):
     # Printing to two files for QPS and TQM
     with open(qps_address, "w") as file:
         file.write(
-            f"""QPS AND TQM CAECUM DATA FOR THE 3 MONTHS PRIOR TO {month}/{year}
+            f"""QPS AND TQM CAECUM DATA FOR {month_dict[month]} {year}
             
 
          Total colons performed:  {total_colons}
 
          Total number of bad bowel preps:  {bad_bowel_preps}
 
-         Total failure to reach caecum minus obstruction:  {failure_reach_caecum}"""
+         Total failure to reach caecum minus obstruction:  {failure_reach_caecum}\n\n\n\n"""
         )
     with open(tqm_address, "w") as file:
-        file.write(f"TQM COLONOSCOPY CAECUM DATA  FOR THE 3 MONTHS PRIOR TO {month}/{year}\n\n\n")
+        file.write(f"TQM COLONOSCOPY CAECUM DATA FOR {month_dict[month]} {year}\n\n\n")
         file.write("Doctor                            Total    Poor Prep   Other Failures\n\n")
         for key, value in results.items():
             file.write(f"{key.ljust(20)}:               {str(value["total"]).ljust(8)}   {str(value["poor_prep"]).ljust(8)} {str(value['fail'] - value["poor_prep"]).ljust(8)}\n")
