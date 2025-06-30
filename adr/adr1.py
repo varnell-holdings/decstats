@@ -1,5 +1,6 @@
 import csv
 from dataclasses import dataclass
+from datetime import datetime
 import re
 
 
@@ -106,9 +107,18 @@ def parser(f):
                         try:
                             doctor = unknown_doc_dict_1[second_key]
                         except KeyError:
-                            doctor = unknown_doc_dict_2.get(third_key, ("unknown", "?"))
+                            doctor = unknown_doc_dict_2.get(
+                                third_key, ("unknown", "?", "?")
+                            )
                     ep.doc = doctor[0]
                     ep.mrn = doctor[1]
+                    if not ep.dob:
+                        ep.dob = doctor[2]
+                    try:
+                        datetime.strptime(ep.dob, "%d%m%Y")
+                    except ValueError as e:
+                        ep.dob = doctor[2]
+                        print(f"{e}")
 
                     line_list = []
                     line_list.append(ep.date)
@@ -150,7 +160,10 @@ def doc_dict_maker(month):
                 key = date + dob + name
                 second_key = date + dob
                 third_key = date + name
-                doc = (entry[5].lower(), entry[1])
+                dob_for_csv = entry[18].replace("/", "")
+                if len(dob_for_csv) == 7:
+                    dob_for_csv = "0" + dob_for_csv
+                doc = (entry[5].lower(), entry[1], dob_for_csv)
                 doc_dict[key] = doc
                 unknown_doc_dict_1[second_key] = doc
                 unknown_doc_dict_2[third_key] = doc

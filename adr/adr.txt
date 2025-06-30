@@ -1,0 +1,16 @@
+                     NumCols     ADR       ADR<50      ADR>50
+Bariol                48          50          12         57        
+Chetwood              9           11          0          50        
+Feller                55          44          18         50        
+Fenton-Lee            2           50          -1         50        
+Gett                  20          25          15         43        
+Ghaly                 51          33          20         42        
+Gounder               11          64          0          88        
+Meagher               49          69          58         73        
+Mill                  41          51          44         56        
+Sanagapalli           27          37          17         53        
+Stoita                57          32          17         48        
+Unknown               10          50          0          71        
+Vivekanandarajah      31          29          6          57        
+Wettstein             72          56          29         62        
+Williams              35          54          40         57        
