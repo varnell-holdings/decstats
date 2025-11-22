@@ -1,1 +1,15 @@
+Help writing a python program please. I am comfortable with tkinter.
+I have a csv with the following headers => date,mrn,in,out,anaes,endo,asa,upper,lower,anal,nurse,clips,consult,polyp,caecum,title,firstname,surname,dob,email
+The file is named episodes.csv
+The csv has the latest date at the botton in the format dd-mm-yyyy
+There will be roughly 40 rows with the same date. A few thousand entries in total.
 
+I want the user on starting the program to see a date picker. On selecting a date the program will write the rows in the csv with that date to an xlxs file. Only the columns upper, lower, anal and polyp will be written to the xlxs file.
+
+The name of the destination file will be the {date in isoformat}.xlxs
+
+If there is no corresponding date in the csv file a message box will inform the user. 
+
+Assume the python program, episodes.csv and destination file are in the same directory. I will adjust the paths in production on another Windows machine.
+
+When finished the program should open the newly created xlxs file and then terminate.
