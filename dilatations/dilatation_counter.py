@@ -19,7 +19,8 @@ else:
     start_month = 7
     end_month = 12
 
-count = 0
+dilatation_count = 0
+upper_endoscopy_count = 0
 
 with open("episodes.csv", "r") as file:
     reader = csv.DictReader(file)
@@ -30,8 +31,11 @@ with open("episodes.csv", "r") as file:
         entry_year = date_parts[2]
 
         if entry_year == year and start_month <= entry_month <= end_month:
+            if row["upper"].strip():
+                upper_endoscopy_count += 1
             if row["upper"] == "30475":
-                count += 1
+                dilatation_count += 1
 
 print()
-print(f"The number of dilatations performed in the period {period_name} {year} was {count}.")
+print(f"The number of upper endoscopies performed in the period {period_name} {year} was {upper_endoscopy_count}.")
+print(f"The number of dilatations performed in the period {period_name} {year} was {dilatation_count}.")
