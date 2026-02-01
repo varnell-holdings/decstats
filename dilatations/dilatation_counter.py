@@ -1,4 +1,10 @@
 import csv
+import platform
+
+if platform.system() == "Windows":
+    csv_path = r"D:\John TILLET\episode_data\episodes.csv"
+else:
+    csv_path = "episodes.csv"
 
 print("Welcome to Dilatation Counter")
 print()
@@ -22,7 +28,7 @@ else:
 dilatation_count = 0
 upper_endoscopy_count = 0
 
-with open("episodes.csv", "r") as file:
+with open(csv_path, "r") as file:
     reader = csv.DictReader(file)
     for row in reader:
         date_parts = row["date"].split("-")
