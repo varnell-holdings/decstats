@@ -15,3 +15,4 @@ At the end the program will out put to the terminal The number of dilatations pe
 Addition for new session: I now want the program to count the number of non empty entries in the 'upper' column as well and add this to the output with a line like 'The number of upper endoscopies performed in the period **** was - such and such.
 Thanks
 
+Session 3: Added OS-aware file path so the program works on both Windows and macOS. Used platform.system() to detect the OS — on Windows it reads episodes.csv from D:\John TILLET\episode_data\episodes.csv, on macOS it uses the relative path (current folder). Also attempted to set up a git remote for pushing to the decstats GitHub repo, but discovered dilatations is a subfolder of that repo, not its own repo. Will copy the updated file manually instead.
