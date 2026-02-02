@@ -1,8 +1,10 @@
 from collections import defaultdict
 import csv
+import os
+from pathlib import Path
+
 
 month_dict = {3: "JANUARY-MARCH", 6: "APRIL-JUNE", 9: "JULY-SEPTEMBER", 12: "OCTOBER-DECEMBER"}
-
 
 def suc_fail_template():
     return {"success": 0, "fail": 0, "total": 0, "poor_prep": 0}
@@ -18,9 +20,11 @@ def log_doc_caecum(doctor, suc_fail, poor_prep=False):
         results[doctor]["poor_prep"] += 1
 
 
-qps_address = "caecum_qps.txt"
-tqm_address = "caecum_tqm.txt"
 
+
+base = Path("d:/john tillet/source/active/caecum/")
+caecumfile = base / "caecum.csv"
+qps_address = base / "caecum_qps.txt"
 
 def dates_finder(month):
     """Set varibles to previous 3 month & stringify them."""
@@ -41,8 +45,9 @@ def main(year, month):
     month_set = dates_finder(month)
     total_colons = 0
     bad_bowel_preps = 0
+    failures = []
     failure_reach_caecum = 0  # For QPS defined as total fails except bowel obstructions and including poor preps
-    with open("caecum.csv") as file:
+    with open(caecumfile) as file:
         reader = csv.reader(file)
         for line in reader:
             if line[0][0:4] == year and line[0][5:7] in month_set:
@@ -54,6 +59,9 @@ def main(year, month):
                     log_doc_caecum(line[1], line[3])
                 if line[3] == "fail" and line[4] != "Obstruction":
                     failure_reach_caecum += 1
+                if line[3] == 'fail':
+                    case = (line[0], line[1], line[2], line[4])
+                    failures.append(case)
 
     # Printing to terminal for debugging
     print(f"QPS CAECUM DATA FOR THE 3 MONTHS PRIOR TO {month}/{year}")
@@ -69,12 +77,12 @@ def main(year, month):
     print(" Doctor                            Total    Poor Prep   Other Failures")
     print()
     for key, value in results.items():
-        print(f"{key.ljust(20)}:               {str(value["total"]).ljust(8)}   {str(value["poor_prep"]).ljust(8)} {str(value['fail'] - value["poor_prep"]).ljust(8)}")
+        print(f"""{key.ljust(20)}:               {str(value['total']).ljust(8)}   {str(value["poor_prep"]).ljust(8)} {str(value['fail'] - value["poor_prep"]).ljust(8)}""")
 
     # Printing to two files for QPS and TQM
     with open(qps_address, "w") as file:
         file.write(
-            f"""QPS AND TQM CAECUM DATA FOR {month_dict[month]} {year}
+            f"""QPS CAECUM DATA FOR {month_dict[month]} {year}
             
 
          Total colons performed:  {total_colons}
@@ -83,14 +91,19 @@ def main(year, month):
 
          Total failure to reach caecum minus obstruction:  {failure_reach_caecum}\n\n\n\n"""
         )
-    with open(tqm_address, "w") as file:
-        file.write(f"TQM COLONOSCOPY CAECUM DATA FOR {month_dict[month]} {year}\n\n\n")
-        file.write("Doctor                            Total    Poor Prep   Other Failures\n\n")
-        for key, value in results.items():
-            file.write(f"{key.ljust(20)}:               {str(value["total"]).ljust(8)}   {str(value["poor_prep"]).ljust(8)} {str(value['fail'] - value["poor_prep"]).ljust(8)}\n")
+    
 
-    # os.startfile(qps_address)
-    # os.startfile(tqm_address)
+    
+    with open(qps_address, "a") as file:
+        file.write(f"TQM CAECUM DATA FOR {month_dict[month]} {year}\n\n\n")
+        file.write("Doctor                        Total colons    Poor Prep   Other Failures\n\n")
+        for key, value in results.items():
+            file.write(f"""{key.ljust(20)}:               {str(value["total"]).ljust(8)}   {str(value["poor_prep"]).ljust(8)} {str(value['fail'] - value["poor_prep"]).ljust(8)}\n""")
+        file.write("\n\n")
+        for case in failures:
+            file.write(f"{case[0]}\t{case[1].ljust(20)}\t{case[2].ljust(20)}\t{case[3]}\n")
+    os.startfile(qps_address)
+
     # uncomment this on deployment on windows
 
 
