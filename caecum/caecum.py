@@ -26,11 +26,13 @@ def log_doc_caecum(results, doctor, outcome, poor_prep=False):
 
 
 if platform.system() == "Windows":
-    base = Path("d:/john tillet/source/active/caecum/")
+    data_base = Path("d:/john tillet/episode_data/")
+    code_base = Path("d:/john tillet/source/active/caecum/")
 else:
-    base = Path(".")
-data_file = base / "episodes.csv"
-qps_address = base / "caecum_qps.txt"
+    data_base = Path(".")
+    code_base = Path(".")
+data_file = data_base / "episodes.csv"
+qps_address = code_base / "caecum_qps.txt"
 
 
 def dates_finder(month):
