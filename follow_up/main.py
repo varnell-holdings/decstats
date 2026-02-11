@@ -1,4 +1,4 @@
-import csv
+﻿import csv
 import os
 import platform
 import tkinter as tk
@@ -8,7 +8,7 @@ from pathlib import Path
 
 # ========== CONFIGURATION ==========
 # Change this date for production (DD-MM-YYYY format)
-START_DATE = "17-12-2025"
+START_DATE = "11-02-2026"
 
 # File paths — Windows uses production paths, Mac uses current directory
 if platform.system() == "Windows":
@@ -87,7 +87,7 @@ def display_patient(patient, labels):
     labels["nurse"].config(text=patient["nurse"])
     labels["upper"].config(text=patient["upper"])
     labels["colon"].config(text=patient["colon"])
-    labels["anal"].config(text=patient["anal"])
+    labels["anal"].config(text=patient["banding"])
     labels["polyp"].config(text=patient["polyp"])
     # Format phone as "dddd ddd ddd" for readability
     phone = patient["phone"]
