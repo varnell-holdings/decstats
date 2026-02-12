@@ -87,7 +87,7 @@ def display_patient(patient, labels):
     labels["nurse"].config(text=patient["nurse"])
     labels["upper"].config(text=patient["upper"])
     labels["colon"].config(text=patient["colon"])
-    labels["anal"].config(text=patient["banding"])
+    labels["anal"].config(text=patient["anal"])
     labels["polyp"].config(text=patient["polyp"])
     # Format phone as "dddd ddd ddd" for readability
     phone = patient["phone"]
@@ -155,7 +155,7 @@ def main():
     counter_label.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
     field_names = ["date", "name", "endo", "anaes", "nurse", "upper", "colon", "anal", "polyp", "phone"]
-    field_labels = ["Date:", "Name:", "Endo:", "Anaes:", "Nurse:", "Upper:", "Colon:", "Anal:", "Polyp:", "Phone:"]
+    field_labels = ["Date:", "Name:", "Endo:", "Anaes:", "Nurse:", "Upper:", "Colon:", "Banding:", "Polyp:", "Phone:"]
 
     data_labels = {}
     for i, (field, label_text) in enumerate(zip(field_names, field_labels), start=1):
