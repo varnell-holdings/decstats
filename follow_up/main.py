@@ -1,15 +1,14 @@
-﻿import csv
+import configparser
+import csv
 import os
 import platform
+import subprocess
 import tkinter as tk
-from tkinter import ttk
 from datetime import datetime, timedelta
 from pathlib import Path
+from tkinter import ttk
 
 # ========== CONFIGURATION ==========
-# Change this date for production (DD-MM-YYYY format)
-START_DATE = "11-02-2026"
-
 # File paths — Windows uses production paths, Mac uses current directory
 if platform.system() == "Windows":
     data_base = Path("d:/john tillet/episode_data/")
@@ -17,6 +16,11 @@ if platform.system() == "Windows":
 else:
     data_base = Path(".")
     code_base = Path(".")
+
+# Read start date from config.ini (DD-MM-YYYY format)
+config = configparser.ConfigParser()
+config.read(code_base / "config.ini")
+START_DATE = config["settings"]["start_date"]
 
 EPISODES_FILE = data_base / "episodes.csv"
 FOLLOWUP_FILE = code_base / "follow_up.csv"
@@ -110,7 +114,9 @@ def write_result(patient, answered, issue, issue_text):
     all_columns = original_columns + ["answered", "issue", "issue_text"]
 
     # Check if we need to write a header (file doesn't exist or is empty)
-    write_header = not os.path.exists(FOLLOWUP_FILE) or os.path.getsize(FOLLOWUP_FILE) == 0
+    write_header = (
+        not os.path.exists(FOLLOWUP_FILE) or os.path.getsize(FOLLOWUP_FILE) == 0
+    )
 
     with open(FOLLOWUP_FILE, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=all_columns)
@@ -140,6 +146,20 @@ def main():
     root = tk.Tk()
     root.title("Follow-Up")
 
+    # --- Menu bar ---
+    def open_config():
+        config_path = code_base / "config.ini"
+        if platform.system() == "Windows":
+            subprocess.Popen(["notepad", str(config_path)])
+        else:
+            subprocess.Popen(["open", str(config_path)])
+
+    menubar = tk.Menu(root)
+    settings_menu = tk.Menu(menubar, tearoff=0)
+    settings_menu.add_command(label="Edit Config", command=open_config)
+    menubar.add_cascade(label="Settings", menu=settings_menu)
+    root.config(menu=menubar)
+
     # --- Top frame: status bar with count label ---
     top_frame = ttk.Frame(root, padding=10)
     top_frame.pack(fill="x")
@@ -154,8 +174,30 @@ def main():
     counter_label = ttk.Label(data_frame, text="", font=("TkDefaultFont", 12, "bold"))
     counter_label.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-    field_names = ["date", "name", "endo", "anaes", "nurse", "upper", "colon", "anal", "polyp", "phone"]
-    field_labels = ["Date:", "Name:", "Endo:", "Anaes:", "Nurse:", "Upper:", "Colon:", "Banding:", "Polyp:", "Phone:"]
+    field_names = [
+        "date",
+        "name",
+        "endo",
+        "anaes",
+        "nurse",
+        "upper",
+        "colon",
+        "anal",
+        "polyp",
+        "phone",
+    ]
+    field_labels = [
+        "Date:",
+        "Name:",
+        "Endo:",
+        "Anaes:",
+        "Nurse:",
+        "Upper:",
+        "Colon:",
+        "Banding:",
+        "Polyp:",
+        "Phone:",
+    ]
 
     data_labels = {}
     for i, (field, label_text) in enumerate(zip(field_names, field_labels), start=1):
@@ -181,14 +223,20 @@ def main():
         row=0, column=0, sticky="w", padx=(0, 10), pady=5
     )
     answered_yes = ttk.Radiobutton(
-        entry_frame, text="Yes", variable=answered_var, value="yes",
-        command=lambda: on_answered_change()
+        entry_frame,
+        text="Yes",
+        variable=answered_var,
+        value="yes",
+        command=lambda: on_answered_change(),
     )
     answered_yes.grid(row=0, column=1, sticky="w", padx=(0, 10), pady=5)
 
     answered_no = ttk.Radiobutton(
-        entry_frame, text="No", variable=answered_var, value="no",
-        command=lambda: on_answered_change()
+        entry_frame,
+        text="No",
+        variable=answered_var,
+        value="no",
+        command=lambda: on_answered_change(),
     )
     answered_no.grid(row=0, column=2, sticky="w", pady=5)
 
@@ -199,14 +247,22 @@ def main():
         row=1, column=0, sticky="w", padx=(0, 10), pady=5
     )
     issue_yes = ttk.Radiobutton(
-        entry_frame, text="Yes", variable=issue_var, value="yes",
-        command=lambda: on_issue_change(), state="disabled"
+        entry_frame,
+        text="Yes",
+        variable=issue_var,
+        value="yes",
+        command=lambda: on_issue_change(),
+        state="disabled",
     )
     issue_yes.grid(row=1, column=1, sticky="w", padx=(0, 10), pady=5)
 
     issue_no = ttk.Radiobutton(
-        entry_frame, text="No", variable=issue_var, value="no",
-        command=lambda: on_issue_change(), state="disabled"
+        entry_frame,
+        text="No",
+        variable=issue_var,
+        value="no",
+        command=lambda: on_issue_change(),
+        state="disabled",
     )
     issue_no.grid(row=1, column=2, sticky="w", pady=5)
 
@@ -323,7 +379,9 @@ def main():
         # Reset entry widgets for the new patient
         reset_entry_widgets()
 
-    next_button = ttk.Button(bottom_frame, text="Next >>>", command=next_patient, state="disabled")
+    next_button = ttk.Button(
+        bottom_frame, text="Next >>>", command=next_patient, state="disabled"
+    )
     next_button.pack()
 
     # --- Auto-load outstanding patients on startup ---
