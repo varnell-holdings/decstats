@@ -132,6 +132,42 @@ def write_result(patient, answered, issue, issue_text):
         writer.writerow(row)
 
 
+def update_followup_row(date, mrn, issue, issue_text):
+    """Find a row in follow_up.csv by date+mrn and update its follow-up fields.
+
+    Sets answered to "yes", updates issue, and appends new issue_text
+    to any existing text (separated by ' | ') so previous notes are preserved.
+    Returns True if the row was found and updated, False otherwise.
+    """
+    rows = []
+    found = False
+
+    with open(FOLLOWUP_FILE, newline="") as f:
+        reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames
+        for row in reader:
+            if row["date"] == date and row["mrn"] == mrn:
+                row["answered"] = "yes"
+                row["issue"] = issue
+                # Append new details to existing text instead of replacing
+                existing = row.get("issue_text", "").strip()
+                new_text = issue_text.strip()
+                if existing and new_text:
+                    row["issue_text"] = f"{existing} | {new_text}"
+                elif new_text:
+                    row["issue_text"] = new_text
+                found = True
+            rows.append(row)
+
+    if found:
+        with open(FOLLOWUP_FILE, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+
+    return found
+
+
 def main():
     # Load all episodes once at startup
     all_rows = load_episodes(EPISODES_FILE)
@@ -154,10 +190,135 @@ def main():
         else:
             subprocess.Popen(["open", str(config_path)])
 
+    def open_callback_dialog():
+        """Open a popup to find a patient in follow_up.csv and update their record."""
+        dialog = tk.Toplevel(root)
+        dialog.title("Patient Callback")
+        dialog.resizable(False, False)
+        pad = {"padx": 10, "pady": 5}
+
+        # Row 0: Date field
+        ttk.Label(dialog, text="Date (DD-MM-YYYY):").grid(row=0, column=0, sticky="w", **pad)
+        date_entry = ttk.Entry(dialog, width=15)
+        date_entry.grid(row=0, column=1, sticky="w", **pad)
+
+        # Row 1: MRN field
+        ttk.Label(dialog, text="MRN:").grid(row=1, column=0, sticky="w", **pad)
+        mrn_entry = ttk.Entry(dialog, width=15)
+        mrn_entry.grid(row=1, column=1, sticky="w", **pad)
+
+        # Row 3: Patient name (hidden until search succeeds)
+        name_label = ttk.Label(dialog, text="", font=("TkDefaultFont", 11, "bold"))
+        name_label.grid(row=3, column=0, columnspan=2, sticky="w", **pad)
+        name_label.grid_remove()
+
+        # Row 4: Problem? radio buttons
+        cb_issue_var = tk.StringVar(value="no")
+        ttk.Label(dialog, text="Problem?").grid(row=4, column=0, sticky="w", **pad)
+        issue_frame = ttk.Frame(dialog)
+        issue_frame.grid(row=4, column=1, sticky="w", **pad)
+        cb_issue_yes = ttk.Radiobutton(
+            issue_frame, text="Yes", variable=cb_issue_var, value="yes",
+            command=lambda: cb_details_entry.config(state="normal"),
+        )
+        cb_issue_no = ttk.Radiobutton(
+            issue_frame, text="No", variable=cb_issue_var, value="no",
+            command=lambda: (cb_details_entry.config(state="normal"),
+                             cb_details_entry.delete(0, "end"),
+                             cb_details_entry.config(state="disabled")),
+        )
+        cb_issue_yes.pack(side="left", padx=(0, 10))
+        cb_issue_no.pack(side="left")
+        cb_issue_yes.config(state="disabled")
+        cb_issue_no.config(state="disabled")
+
+        # Row 5: Details entry
+        ttk.Label(dialog, text="Details:").grid(row=5, column=0, sticky="w", **pad)
+        cb_details_entry = ttk.Entry(dialog, width=30, state="disabled")
+        cb_details_entry.grid(row=5, column=1, sticky="w", **pad)
+
+        # Row 6: Message label + Save button
+        msg_label = ttk.Label(dialog, text="", foreground="red")
+        msg_label.grid(row=6, column=0, columnspan=2, sticky="w", **pad)
+
+        # We store the matched row data so Save knows what to update
+        matched = [None]
+
+        def do_search():
+            """Look up the patient in follow_up.csv by date + mrn."""
+            search_date = date_entry.get().strip()
+            search_mrn = mrn_entry.get().strip()
+            msg_label.config(text="", foreground="red")
+            name_label.grid_remove()
+            matched[0] = None
+
+            if not search_date or not search_mrn:
+                msg_label.config(text="Please enter both date and MRN.")
+                return
+
+            if not os.path.exists(FOLLOWUP_FILE) or os.path.getsize(FOLLOWUP_FILE) == 0:
+                msg_label.config(text="No follow-up data found.")
+                return
+
+            with open(FOLLOWUP_FILE, newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row["date"] == search_date and row["mrn"] == search_mrn:
+                        matched[0] = row
+                        break
+
+            if matched[0]:
+                patient_name = (f"{matched[0].get('title', '')} "
+                                f"{matched[0].get('firstname', '')} "
+                                f"{matched[0].get('surname', '')}").strip()
+                name_label.config(text=patient_name)
+                name_label.grid()
+                cb_issue_var.set("no")
+                cb_issue_yes.config(state="normal")
+                cb_issue_no.config(state="normal")
+                cb_details_entry.config(state="normal")
+                cb_details_entry.delete(0, "end")
+                cb_details_entry.config(state="disabled")
+                save_button.config(state="normal")
+                msg_label.config(text="Patient found. Update details below.",
+                                 foreground="green")
+            else:
+                msg_label.config(text="No matching patient found.")
+                cb_issue_yes.config(state="disabled")
+                cb_issue_no.config(state="disabled")
+                cb_details_entry.config(state="normal")
+                cb_details_entry.delete(0, "end")
+                cb_details_entry.config(state="disabled")
+                save_button.config(state="disabled")
+
+        def do_save():
+            """Update the matched row in follow_up.csv and close the dialog."""
+            issue = cb_issue_var.get()
+            details = cb_details_entry.get().strip()
+
+            if issue == "yes" and not details:
+                msg_label.config(text="Please enter details about the problem.",
+                                 foreground="red")
+                return
+
+            search_date = date_entry.get().strip()
+            search_mrn = mrn_entry.get().strip()
+            update_followup_row(search_date, search_mrn, issue, details)
+            dialog.destroy()
+
+        # Row 2: Search button
+        search_button = ttk.Button(dialog, text="Search", command=do_search)
+        search_button.grid(row=2, column=0, columnspan=2, pady=5)
+
+        # Row 7: Save button
+        save_button = ttk.Button(dialog, text="Save", command=do_save, state="disabled")
+        save_button.grid(row=7, column=0, columnspan=2, pady=10)
+
     menubar = tk.Menu(root)
     settings_menu = tk.Menu(menubar, tearoff=0)
     settings_menu.add_command(label="Edit Config", command=open_config)
-    menubar.add_cascade(label="Settings", menu=settings_menu)
+    settings_menu.add_command(label="Patient Callback", command=open_callback_dialog)
+    menubar.add_cascade(label="Tools", menu=settings_menu)
     root.config(menu=menubar)
 
     # --- Top frame: status bar with count label ---
